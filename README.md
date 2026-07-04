@@ -2,6 +2,12 @@
 
 Hệ thống tra cứu và thống kê điểm thi THPT 2024.
 
+* **Link Demo Trực Tuyến:** [https://g-score-2024.netlify.app/](https://g-score-2024.netlify.app/)
+
+> ⚠️ **LƯU Ý VỀ DỮ LIỆU BẢN CLOUD:** 
+> Do chính sách giới hạn bộ nhớ đệm (1GB storage) của gói cơ sở dữ liệu Cloud miễn phí, cơ sở dữ liệu trên Cloud chỉ chứa điểm thi của **470.000 thí sinh đầu tiên** (tra cứu các SBD lớn hơn sẽ báo không có điểm). 
+> Nếu bạn khởi chạy ứng dụng dưới máy **Local** hoặc bằng **Docker Local**, hệ thống sẽ nạp và hiển thị **đầy đủ 100% dữ liệu (1.061.605 thí sinh)** không bị giới hạn.
+
 ---
 
 ## Cách 1: Khởi chạy bằng Docker

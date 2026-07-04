@@ -4,14 +4,34 @@ import Card from '../components/Card';
 import SearchForm from '../components/SearchForm';
 import { getStudentCount, getSubjects } from '../services/api';
 
+// Bộ nhớ đệm toàn cục để giữ trạng thái khi đổi trang
+let globalStudentCount = null;
+let globalSubjectCount = null;
+
 const DashboardPage = () => {
   const navigate = useNavigate();
-  const [studentCount, setStudentCount] = useState(null);
-  const [subjectCount, setSubjectCount] = useState(null);
+  const [studentCount, setStudentCount] = useState(globalStudentCount);
+  const [subjectCount, setSubjectCount] = useState(globalSubjectCount);
 
   useEffect(() => {
-    getStudentCount().then((res) => setStudentCount(res.data.count)).catch(() => {});
-    getSubjects().then((res) => setSubjectCount(res.data.length)).catch(() => {});
+    // Chỉ gọi API nếu bộ nhớ đệm chưa có dữ liệu
+    if (globalStudentCount === null) {
+      getStudentCount()
+        .then((res) => {
+          globalStudentCount = res.data.count;
+          setStudentCount(res.data.count);
+        })
+        .catch(() => {});
+    }
+
+    if (globalSubjectCount === null) {
+      getSubjects()
+        .then((res) => {
+          globalSubjectCount = res.data.length;
+          setSubjectCount(res.data.length);
+        })
+        .catch(() => {});
+    }
   }, []);
 
   const handleSearch = (sbd) => {
