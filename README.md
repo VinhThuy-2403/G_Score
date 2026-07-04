@@ -10,6 +10,33 @@ Hệ thống tra cứu và thống kê điểm thi THPT 2024.
 
 ---
 
+## 🛠️ Công nghệ sử dụng
+
+### Frontend
+* **React.js** (Phiên bản 18+, khởi tạo bằng **Vite**).
+* **React Router DOM** (Quản lý định tuyến trang).
+* **Axios** (Kết nối và gọi API tới Backend).
+* **Vanilla CSS** (Thiết kế giao diện hiện đại, responsive).
+
+### Backend
+* **Node.js** & **Express.js** (Xây dựng các RESTful API).
+* **Sequelize ORM** (Tương tác và quản lý Database thông qua các Model, Migration, Seeder).
+* **csv-parse** (Đọc và xử lý file CSV dữ liệu thi dung lượng lớn).
+
+### Database
+* **MySQL 8.0** (Hệ quản trị cơ sở dữ liệu quan hệ).
+
+---
+
+## 🚀 Công nghệ Deploy (Môi trường Cloud)
+
+* **Frontend Web Hosting:** **Netlify** (Tự động build và phân phối qua CDN).
+* **Backend Web Service:** **Render** (Máy chủ chạy Node.js).
+* **Database Cloud:** **Aiven** (Dịch vụ cung cấp MySQL Cloud bảo mật SSL).
+* **Containerization:** **Docker** & **Docker Compose** (Đóng gói môi trường chạy thử cục bộ tiện lợi).
+
+---
+
 ## Cách 1: Khởi chạy bằng Docker
 
 ### Bước 1: Khởi động các container
