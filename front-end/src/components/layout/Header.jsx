@@ -20,9 +20,6 @@ const Header = () => {
       <h1 className="header-title" style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>
         {title}
       </h1>
-      <div className="header-avatar" title="User">
-        <span>U</span>
-      </div>
     </header>
   );
 };

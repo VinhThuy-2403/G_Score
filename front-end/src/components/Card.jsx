@@ -1,5 +1,5 @@
-const Card = ({ children, className = '', style = {} }) => (
-  <div className={`card ${className}`} style={style}>
+const Card = ({ children, className = '', style = {}, ...props }) => (
+  <div className={`card ${className}`} style={style} {...props}>
     {children}
   </div>
 );
