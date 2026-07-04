@@ -4,12 +4,47 @@ const { Subject, Student, sequelize } = require('../models');
 const { Op, QueryTypes } = require('sequelize');
 
 class ReportService {
+  constructor() {
+    // Khởi tạo bộ lưu trữ đệm (RAM Cache) của Node.js
+    this.cache = {
+      scoreLevels: {}, // { toan: {...}, ngu_van: {...} }
+      top10: null,     // [ Thí sinh 1, Thí sinh 2... ]
+    };
+  }
+
   /**
-   * Thống kê 4 mức điểm cho 1 môn — dùng SQL SUM(CASE WHEN) và FORCE INDEX để ép MySQL dùng index composite
-   * @param {string} subjectCode
-   * @returns {{ subject: string, subjectName: string, levels: object }}
+   * Tính toán sẵn toàn bộ dữ liệu báo cáo (Chạy lúc khởi động server)
    */
-  async getScoreLevels(subjectCode) {
+  async initCache() {
+    try {
+      console.log('[Cache] Đang tính toán trước dữ liệu báo cáo để nạp vào RAM...');
+      const subjects = await Subject.findAll({ order: [['id', 'ASC']] });
+      
+      if (subjects.length === 0) {
+        console.log('[Cache] Database trống (chưa seed). Bỏ qua tính toán trước.');
+        return;
+      }
+
+      // Tính phổ điểm song song cho tất cả các môn
+      await Promise.all(
+        subjects.map(async (s) => {
+          const data = await this.calculateScoreLevels(s.code);
+          if (data) this.cache.scoreLevels[s.code] = data;
+        })
+      );
+
+      // Tính bảng xếp hạng Top 10
+      this.cache.top10 = await this.calculateTop10GroupA();
+      console.log('[Cache] Nạp dữ liệu báo cáo vào RAM thành công! Sẵn sàng phục vụ 0ms.');
+    } catch (err) {
+      console.warn('[Cache Warning] Không thể tính toán trước dữ liệu (DB có thể chưa được setup):', err.message);
+    }
+  }
+
+  /**
+   * LOGIC TÍNH TOÁN PHỔ ĐIỂM (Truy vấn thực tế dưới DB)
+   */
+  async calculateScoreLevels(subjectCode) {
     const subject = await Subject.findOne({ where: { code: subjectCode } });
     if (!subject) return null;
 
@@ -40,8 +75,22 @@ class ReportService {
   }
 
   /**
-   * Thống kê 4 mức điểm cho tất cả môn — chạy song song
-   * @returns {Array}
+   * LẤY PHỔ ĐIỂM 1 MÔN (Kiểm tra cache trước, nếu không có mới tính và lưu)
+   */
+  async getScoreLevels(subjectCode) {
+    // Nếu có trong cache -> lấy luôn
+    if (this.cache.scoreLevels[subjectCode]) {
+      return this.cache.scoreLevels[subjectCode];
+    }
+    
+    // Nếu chưa có (Ví dụ: DB vừa được nạp mới) -> tính và lưu vào cache
+    const data = await this.calculateScoreLevels(subjectCode);
+    if (data) this.cache.scoreLevels[subjectCode] = data;
+    return data;
+  }
+
+  /**
+   * Lấy toàn bộ phổ điểm các môn
    */
   async getAllScoreLevels() {
     const subjects = await Subject.findAll({ order: [['id', 'ASC']] });
@@ -52,13 +101,9 @@ class ReportService {
   }
 
   /**
-   * Top 10 thí sinh khối A (Toán + Vật lí + Hóa học)
-   * Tối ưu hóa tuyệt đối: Chỉ lấy thí sinh đạt >= 9.0 cho cả 3 môn khối A.
-   * Giảm số dòng quét của bảng dẫn từ 417k xuống còn 30k dòng.
-   * @returns {Array}
+   * LOGIC TÍNH BẢNG XẾP HẠNG TOP 10 KHỐI A (Truy vấn thực tế dưới DB)
    */
-  async getTop10GroupA() {
-    // Lấy IDs của 3 môn khối A
+  async calculateTop10GroupA() {
     const groupASubjects = await Subject.findAll({
       where: { group_a: true },
       attributes: ['id', 'code', 'name'],
@@ -77,8 +122,6 @@ class ReportService {
 
     if (!toanId || !vatLiId || !hoaHocId) return [];
 
-    // Chỉ tìm những thí sinh cực xuất sắc đạt >= 9.0 ở cả 3 môn để tìm Top 10.
-    // Điều này đảm bảo thời gian chạy chỉ mất ~0.2 giây mà vẫn tuyệt đối chính xác cho bảng xếp hạng thủ khoa.
     const rows = await sequelize.query(
       `SELECT
         st.sbd,
@@ -114,6 +157,28 @@ class ReportService {
       hoa_hoc: r.hoa_hoc !== null ? parseFloat(r.hoa_hoc) : null,
       total: parseFloat(parseFloat(r.total).toFixed(2)),
     }));
+  }
+
+  /**
+   * LẤY TOP 10 KHỐI A (Kiểm tra cache trước)
+   */
+  async getTop10GroupA() {
+    if (this.cache.top10) {
+      return this.cache.top10;
+    }
+    
+    const data = await this.calculateTop10GroupA();
+    if (data && data.length > 0) this.cache.top10 = data;
+    return data;
+  }
+
+  /**
+   * Reset cache (Dùng khi bạn muốn tính lại dữ liệu mới)
+   */
+  clearCache() {
+    this.cache.scoreLevels = {};
+    this.cache.top10 = null;
+    console.log('[Cache] Đã xóa toàn bộ bộ nhớ đệm của Backend!');
   }
 }
 

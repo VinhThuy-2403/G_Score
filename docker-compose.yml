@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # 1. Cơ sở dữ liệu MySQL
+  db:
+    image: mysql:8.0
+    container_name: gscores-mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: '123456'
+      MYSQL_DATABASE: 'gscores'
+    ports:
+      - '3307:3306'
+    volumes:
+      # Lưu dữ liệu database ở ngoài máy để tránh mất dữ liệu khi restart container
+      - mysql_data:/var/lib/mysql
+    networks:
+      - gscores-network
+    # Tối ưu hóa cấu hình bộ nhớ đệm cho MySQL khi chạy trong container
+    command: --default-authentication-plugin=mysql_native_password --innodb_buffer_pool_size=256M
+
+  # 2. Server Backend (Node.js)
+  backend:
+    build: ./back-end
+    container_name: gscores-backend-app
+    restart: always
+    ports:
+      - '5000:5000'
+    environment:
+      # Sử dụng tên container "db" làm host kết nối database thay cho 127.0.0.1
+      DB_HOST: 'db'
+      DB_USER: 'root'
+      DB_PASSWORD: '123456'
+      DB_NAME: 'gscores'
+      DB_PORT: 3306
+      PORT: 5000
+      NODE_ENV: 'production'
+    depends_on:
+      - db
+    networks:
+      - gscores-network
+
+  # 3. Web Frontend (React + Nginx)
+  frontend:
+    build: ./front-end
+    container_name: gscores-frontend-web
+    restart: always
+    ports:
+      - '80:80'
+    depends_on:
+      - backend
+    networks:
+      - gscores-network
+
+volumes:
+  mysql_data:
+
+networks:
+  gscores-network:
+    driver: bridge
