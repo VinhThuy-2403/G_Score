@@ -8,10 +8,11 @@ const NAV_ITEMS = [
   { to: '/settings', label: 'Cài đặt', icon: '⚙️' },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ onMobileToggle, mobileOpen }) => {
   const [collapsed, setCollapsed] = useState(() => {
     return localStorage.getItem('sidebar-collapsed') === 'true';
   });
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const location = useLocation();
 
@@ -19,13 +20,35 @@ const Sidebar = () => {
     localStorage.setItem('sidebar-collapsed', collapsed);
   }, [collapsed]);
 
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Tự động đóng sidebar khi chuyển trang trên mobile
+  useEffect(() => {
+    if (isMobile && mobileOpen) {
+      onMobileToggle(false);
+    }
+  }, [location.pathname]);
+
+  const sidebarClass = [
+    'sidebar',
+    collapsed && !isMobile ? 'collapsed' : '',
+    isMobile && mobileOpen ? 'mobile-open' : '',
+  ].filter(Boolean).join(' ');
+
   return (
     <>
-      <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
+      {/* Overlay backdrop trên mobile */}
+      {isMobile && mobileOpen && (
+        <div className="sidebar-overlay" onClick={() => onMobileToggle(false)} />
+      )}
 
-        {/* Header — khi mở: logo + tên + nút toggle; khi đóng: chỉ G icon căn giữa */}
-        {collapsed ? (
-          /* Collapsed header: G icon căn giữa, nút toggle bên dưới G */
+      <aside className={sidebarClass}>
+        {/* Header */}
+        {(!isMobile && collapsed) ? (
           <div className="sidebar-header" style={{ flexDirection: 'column', gap: '6px', padding: '14px 0', alignItems: 'center', justifyContent: 'center' }}>
             <div className="sidebar-logo-icon" style={{ width: '32px', height: '32px', fontSize: '15px', fontWeight: 700 }}>G</div>
             <button
@@ -38,19 +61,29 @@ const Sidebar = () => {
             </button>
           </div>
         ) : (
-          /* Expanded header: logo + tên + nút thu gọn */
           <div className="sidebar-header">
             <div className="sidebar-logo">
               <div className="sidebar-logo-icon">G</div>
               <span>G-Scores</span>
             </div>
-            <button
-              className="sidebar-toggle"
-              onClick={() => setCollapsed(true)}
-              title="Thu gọn sidebar"
-            >
-              «
-            </button>
+            {!isMobile && (
+              <button
+                className="sidebar-toggle"
+                onClick={() => setCollapsed(true)}
+                title="Thu gọn sidebar"
+              >
+                «
+              </button>
+            )}
+            {isMobile && (
+              <button
+                className="sidebar-toggle"
+                onClick={() => onMobileToggle(false)}
+                title="Đóng menu"
+              >
+                ✕
+              </button>
+            )}
           </div>
         )}
 
@@ -67,20 +100,22 @@ const Sidebar = () => {
             >
               <span className="nav-icon">{item.icon}</span>
               <span className="nav-label">{item.label}</span>
-              {collapsed && <span className="tooltip">{item.label}</span>}
+              {!isMobile && collapsed && <span className="tooltip">{item.label}</span>}
             </NavLink>
           ))}
         </nav>
       </aside>
 
-      {/* Spacer để đẩy nội dung chính */}
-      <div
-        style={{
-          flexShrink: 0,
-          width: collapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)',
-          transition: 'width 0.2s ease',
-        }}
-      />
+      {/* Spacer — ẩn trên mobile vì sidebar dùng overlay */}
+      {!isMobile && (
+        <div
+          style={{
+            flexShrink: 0,
+            width: collapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)',
+            transition: 'width 0.2s ease',
+          }}
+        />
+      )}
     </>
   );
 };

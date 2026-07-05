@@ -519,6 +519,30 @@ body {
 /* ==============================
    Responsive
    ============================== */
+
+/* Nút Hamburger — mặc định ẩn trên desktop */
+.hamburger-btn {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-primary);
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1;
+  margin-right: 8px;
+}
+
+/* Overlay backdrop khi sidebar mở trên mobile */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 49;
+}
+
 @media (max-width: 1023px) {
   .sidebar {
     width: var(--sidebar-collapsed-width);
@@ -526,14 +550,42 @@ body {
 }
 
 @media (max-width: 767px) {
+  /* Hiện nút hamburger */
+  .hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Hiện overlay */
+  .sidebar-overlay {
+    display: block;
+  }
+
+  /* Sidebar ẩn hoàn toàn sang trái */
   .sidebar {
     transform: translateX(-100%);
+    width: var(--sidebar-width) !important;
+    transition: transform 0.25s ease;
   }
+
+  /* Khi mở sidebar trên mobile — trượt vào */
   .sidebar.mobile-open {
     transform: translateX(0);
-    width: var(--sidebar-width);
   }
+
+  /* Nội dung chiếm toàn bộ chiều rộng */
+  .main-content {
+    width: 100%;
+  }
+
   .page-body {
     padding: 16px;
+  }
+
+  /* Bảng responsive — cho phép cuộn ngang */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
