@@ -68,9 +68,10 @@ docker-compose down
 
 ## Cách 2: Khởi chạy trực tiếp (Local Development)
 
-### Bước 1: Thiết lập Database MySQL & Cấu hình Môi trường
-1. Tạo một database mới tên là `gscores` trong MySQL local của bạn (cổng mặc định `3306`).
-2. Trong thư mục `back-end`, sao chép file `.env.example` thành file `.env`, sau đó mở file `.env` vừa tạo và cấu hình lại thông tin kết nối database (tài khoản, mật khẩu) cho phù hợp với máy của bạn.
+### Bước 1: Thiết lập Database MySQL & Cấu hình Môi trường (.env)
+1. Tạo một database mới tên là `gscores` trong ứng dụng MySQL local của bạn (cổng mặc định `3306`).
+2. Di chuyển vào thư mục `back-end`, sao chép file `.env.example` và đổi tên thành file `.env` (hoặc tạo một bản sao của file này).
+3. Mở file `.env` vừa tạo và tiến hành chỉnh sửa các biến môi trường kết nối database (`DB_USER`, `DB_PASSWORD`, `DB_PORT`, `DB_HOST`) cho khớp hoàn toàn với thông số tài khoản MySQL trên máy tính cá nhân của bạn.
 
 ### Bước 2: Khởi chạy Backend
 1. Di chuyển vào thư mục backend:
