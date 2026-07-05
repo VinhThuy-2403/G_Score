@@ -5,8 +5,8 @@ const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: '🏠', exact: true },
   { to: '/search', label: 'Tra cứu điểm', icon: '🔍' },
   { to: '/reports', label: 'Báo cáo', icon: '📊' },
-  { to: '/settings', label: 'Cài đặt', icon: '⚙️' },
 ];
+
 
 const Sidebar = ({ onMobileToggle, mobileOpen }) => {
   const [collapsed, setCollapsed] = useState(() => {
